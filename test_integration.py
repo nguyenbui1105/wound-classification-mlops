@@ -27,6 +27,7 @@ def integration_client():
     
     # Import after setting env var
     from fastapi.testclient import TestClient
+
     from src.api import app
     
     with TestClient(app) as client:
@@ -268,8 +269,9 @@ def test_real_model_checkpoint_exists():
 @pytest.mark.integration
 def test_real_model_memory_usage():
     """Test that model doesn't consume excessive memory."""
-    import psutil
     import os
+
+    import psutil
     
     # Disable testing mode temporarily
     original_mode = os.getenv("WOUND_API_TESTING", "0")
