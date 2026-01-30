@@ -1,7 +1,7 @@
 # 🩹 Wound Classification MLOps
 
-[![Tests](https://github.com/yourusername/wound-classification-mlops/actions/workflows/tests.yml/badge.svg)](https://github.com/yourusername/wound-classification-mlops/actions/workflows/tests.yml)
-[![Docker Build](https://github.com/yourusername/wound-classification-mlops/actions/workflows/docker-build.yml/badge.svg)](https://github.com/yourusername/wound-classification-mlops/actions/workflows/docker-build.yml)
+[![Tests](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/tests.yml/badge.svg)](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/tests.yml)
+[![Docker Build](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/docker-build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 End-to-end wound image classification system with production-ready MLOps pipeline. Built with FastAPI, Streamlit UI, Docker deployment, comprehensive testing, and CI/CD automation.
