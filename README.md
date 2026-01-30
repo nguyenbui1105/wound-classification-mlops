@@ -1,3 +1,2 @@
-﻿# MLOps for Medical Image Classification
-
-This project explores a lightweight MLOps pipeline for healthcare image analysis.
+# wound-classification-mlops
+End-to-end wound image classification system with MLOps pipeline: FastAPI inference server, Streamlit UI, Docker deployment, automated testing, and CI/CD integration.
