@@ -1,0 +1,16 @@
+# Minimal dependencies for Wound-AI FastAPI server
+# PyTorch is installed separately as CPU-only version
+
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Image processing
+pillow==10.2.0
+
+# Model backend
+timm==0.9.12
+
+# HTTP client (for healthcheck)
+requests==2.31.0

@@ -1,0 +1,57 @@
+# Docker build context exclusions
+# Keeps image size small and build fast
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Artifacts (mounted as volume, don't bake into image)
+artifacts/
+
+# Data
+data/
+*.dvc
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Documentation
+*.md
+docs/
+
+# Tests
+tests/
+test_*.py
+*_test.py
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Claude
+.claude/
+
+# Misc
+*.log
+.env
+.cache/

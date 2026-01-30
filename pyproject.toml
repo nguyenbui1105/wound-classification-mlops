@@ -1,0 +1,22 @@
+[tool.ruff]
+# Set line length
+line-length = 100
+
+# Exclude common directories
+exclude = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    ".dvc",
+    "artifacts",
+]
+
+# Ignore E402 (module level import not at top of file)
+# This is needed because we use sys.path.append before imports
+[tool.ruff.lint]
+ignore = ["E402"]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']

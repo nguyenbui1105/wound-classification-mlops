@@ -1,0 +1,11 @@
+# Development dependencies for Wound-AI project
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+
+# API testing dependencies (already in main requirements)
+# fastapi
+# uvicorn
+# python-multipart
+# pillow

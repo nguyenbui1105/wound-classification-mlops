@@ -1,4 +1,68 @@
-﻿.venv/
+# Python
+.venv/
+venv/
+env/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.claude/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log
+uvicorn.log
+api.log
+
+# Artifacts (model checkpoints, metrics, outputs)
+artifacts/checkpoints/
+artifacts/metrics/
+artifacts/api_predictions/
+artifacts/inference_reports/
+artifacts/api_temp/
+
+# DVC
+.dvc/cache/
+.dvc/tmp/
+
+# Project-specific
 notes/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

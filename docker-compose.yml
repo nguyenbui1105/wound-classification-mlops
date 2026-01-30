@@ -1,0 +1,25 @@
+# Docker Compose for Wound-AI API
+# Start: docker compose up --build
+# Stop: docker compose down
+
+services:
+  wound-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wound-ai-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount artifacts directory for checkpoints and outputs
+      - ./artifacts:/app/artifacts
+    environment:
+      # Path to model checkpoint (inside container)
+      - CHECKPOINT_PATH=/app/artifacts/checkpoints/best_efficientnet.pt
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
