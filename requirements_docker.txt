@@ -1,16 +1,57 @@
-# Minimal dependencies for Wound-AI FastAPI server
-# PyTorch is installed separately as CPU-only version
+# =============================================================================
+# Production Dependencies for Wound-AI FastAPI Server
+# =============================================================================
+# Install with: pip install -r requirements_docker.txt
+#
+# Note: PyTorch is installed separately in Dockerfile for CPU optimization:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# =============================================================================
 
-# FastAPI and server
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-python-multipart==0.0.6
+# -----------------------------------------------------------------------------
+# Web Framework
+# -----------------------------------------------------------------------------
+fastapi==0.109.0         # Modern web framework for APIs
+uvicorn[standard]==0.27.0  # ASGI server with HTTP/2 support
+python-multipart==0.0.6  # File upload support for FastAPI
 
-# Image processing
-pillow==10.2.0
+# -----------------------------------------------------------------------------
+# Image Processing
+# -----------------------------------------------------------------------------
+pillow==10.2.0           # Image loading and manipulation
 
-# Model backend
-timm==0.9.12
+# -----------------------------------------------------------------------------
+# Model & Deep Learning
+# -----------------------------------------------------------------------------
+timm==0.9.12             # PyTorch Image Models (for EfficientNet)
+# torch & torchvision installed separately in Dockerfile
 
-# HTTP client (for healthcheck)
-requests==2.31.0
+# -----------------------------------------------------------------------------
+# Utilities
+# -----------------------------------------------------------------------------
+requests==2.31.0         # HTTP library (for healthcheck)
+
+# -----------------------------------------------------------------------------
+# Optional: Monitoring (uncomment if needed)
+# -----------------------------------------------------------------------------
+# prometheus-client==0.19.0       # Prometheus metrics
+# prometheus-fastapi-instrumentator==6.1.0  # FastAPI metrics
+
+# -----------------------------------------------------------------------------
+# Optional: Performance (uncomment if needed)
+# -----------------------------------------------------------------------------
+# orjson==3.9.10          # Fast JSON serialization
+# python-multipart==0.0.6 # Already included above
+
+# =============================================================================
+# Version Pinning Strategy
+# =============================================================================
+# All versions are pinned for reproducibility and security.
+# Update regularly but test thoroughly before deploying to production.
+#
+# Check for updates:
+#   pip list --outdated
+#
+# Update specific package:
+#   pip install --upgrade fastapi
+#   pip freeze | grep fastapi >> requirements_docker.txt
+# =============================================================================

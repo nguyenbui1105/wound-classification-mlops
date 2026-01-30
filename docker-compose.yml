@@ -1,25 +1,140 @@
-# Docker Compose for Wound-AI API
+# =============================================================================
+# Docker Compose for Wound-AI API (Production-Ready)
+# =============================================================================
 # Start: docker compose up --build
 # Stop: docker compose down
+# Logs: docker compose logs -f wound-api
+# =============================================================================
+
+version: '3.8'
 
 services:
   wound-api:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        UID: ${CONTAINER_UID:-1000}
+        GID: ${CONTAINER_GID:-1000}
+    
     container_name: wound-ai-api
+    
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
+    
     volumes:
       # Mount artifacts directory for checkpoints and outputs
-      - ./artifacts:/app/artifacts
+      - ./artifacts:/app/artifacts:rw
+      # Mount logs directory
+      - ./logs:/app/logs:rw
+      # Optional: mount data directory for batch inference
+      # - ./data:/app/data:ro
+    
     environment:
-      # Path to model checkpoint (inside container)
-      - CHECKPOINT_PATH=/app/artifacts/checkpoints/best_efficientnet.pt
+      # Model configuration
+      - CHECKPOINT_PATH=${CHECKPOINT_PATH:-/app/artifacts/checkpoints/best_efficientnet.pt}
+      - MODEL_VERSION=${MODEL_VERSION:-1.0.0}
+      
+      # API configuration
+      - API_HOST=${API_HOST:-0.0.0.0}
+      - API_PORT=${API_PORT:-8000}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENABLE_DOCS=${ENABLE_DOCS:-true}
+      
+      # Inference configuration
+      - DEFAULT_BATCH_SIZE=${DEFAULT_BATCH_SIZE:-16}
+      - NUM_WORKERS=${NUM_WORKERS:-4}
+      - IMAGE_SIZE=${IMAGE_SIZE:-224}
+      
+      # Testing mode (0 for production, 1 for testing)
+      - WOUND_API_TESTING=${WOUND_API_TESTING:-0}
+      
+      # Performance
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    
     restart: unless-stopped
+    
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    
+    # Resource limits for production stability
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'      # Limit to 2 CPU cores
+          memory: 2G       # Limit to 2GB RAM
+        reservations:
+          cpus: '1.0'      # Reserve at least 1 CPU core
+          memory: 1G       # Reserve at least 1GB RAM
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"    # Max log file size
+        max-file: "3"      # Keep last 3 log files
+        labels: "service=wound-api,environment=production"
+    
+    # Network configuration
+    networks:
+      - wound-ai-network
+
+# =============================================================================
+# Optional: Monitoring Stack (Uncomment to enable)
+# =============================================================================
+
+  # Prometheus for metrics collection
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: wound-ai-prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus_data:/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #   networks:
+  #     - wound-ai-network
+  #   restart: unless-stopped
+
+  # Grafana for visualization
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: wound-ai-grafana
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #   environment:
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+  #   networks:
+  #     - wound-ai-network
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - prometheus
+
+# =============================================================================
+# Networks
+# =============================================================================
+
+networks:
+  wound-ai-network:
+    driver: bridge
+    name: wound-ai-network
+
+# =============================================================================
+# Volumes (for monitoring stack)
+# =============================================================================
+
+# volumes:
+#   prometheus_data:
+#     driver: local
+#   grafana_data:
+#     driver: local
