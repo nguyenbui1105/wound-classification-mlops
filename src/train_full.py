@@ -177,8 +177,6 @@ def compute_metrics_from_confusion_matrix(
     Returns:
         Dict with per-class and aggregate metrics.
     """
-    num_classes = conf_matrix.size(0)
-
     # Per-class metrics
     tp = conf_matrix.diag()  # True positives: diagonal
     fp = conf_matrix.sum(dim=0) - tp  # False positives: column sum - diagonal

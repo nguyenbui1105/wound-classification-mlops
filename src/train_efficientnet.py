@@ -495,7 +495,6 @@ def main():
     # =========================================================================
     # Class imbalance strategy: sampler vs class-weighted loss
     # =========================================================================
-    use_sampler = args.use_sampler and not args.use_class_weights
     use_class_weights = args.use_class_weights
 
     # CPU-friendly settings

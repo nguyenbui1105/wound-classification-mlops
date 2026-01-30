@@ -4,6 +4,10 @@
 pytest==7.4.3
 pytest-cov==4.1.0
 
+# Pin httpx to avoid Starlette TestClient incompatibility
+# httpx >= 0.28 breaks TestClient(app) signature
+httpx<0.28
+
 # API testing dependencies (already in main requirements)
 # fastapi
 # uvicorn
