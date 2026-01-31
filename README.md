@@ -60,7 +60,7 @@ Try the model instantly without installation:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/wound-classification-mlops.git
+git clone https://github.com/nguyenbui1105/wound-classification-mlops.git
 cd wound-classification-mlops
 ```
 
