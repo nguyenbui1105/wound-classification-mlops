@@ -3,6 +3,7 @@
 [![Tests](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/tests.yml/badge.svg)](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/tests.yml)
 [![Docker Build](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/docker-build.yml/badge.svg)](https://github.com/nguyenbui1105/wound-classification-mlops/actions/workflows/docker-build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![HuggingFace Demo](https://img.shields.io/badge/🤗-Demo-yellow.svg)](https://huggingface.co/spaces/nguyenbui1105/wound-classification-demo)
 
 End-to-end wound image classification system with production-ready MLOps pipeline. Built with FastAPI, Streamlit UI, Docker deployment, comprehensive testing, and CI/CD automation.
 
@@ -19,10 +20,22 @@ End-to-end wound image classification system with production-ready MLOps pipelin
 - 📊 **Production monitoring** with structured logging
 - 🔒 **Security-first** with non-root Docker containers
 
+## 🎮 Live Demo
+
+Try the model instantly without installation:
+
+**[🤗 Interactive Demo on HuggingFace Spaces](https://huggingface.co/spaces/nguyenbui1105/wound-classification-demo)**
+
+- Upload wound images and get instant predictions
+- Trained EfficientNet-B0 model (40MB)
+- Probability scores for all 6 wound types
+- No setup required - runs in your browser
+
 ---
 
 ## 📋 Table of Contents
 
+- [Live Demo](#live-demo)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -422,6 +435,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
+- [🤗 Live Demo on HuggingFace Spaces](https://huggingface.co/spaces/nguyenbui1105/wound-classification-demo)
 - [API Documentation](http://localhost:8000/docs) (when server is running)
 - [Streamlit UI](http://localhost:8501) (when UI is running)
 - [Docker Hub](https://hub.docker.com/r/yourusername/wound-ai-api)
