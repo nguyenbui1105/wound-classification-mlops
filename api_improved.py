@@ -80,12 +80,14 @@ file_formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
 file_handler.setFormatter(file_formatter)
 logger.addHandler(file_handler)
 
+
 # Custom filter to add request_id
 class RequestIDFilter(logging.Filter):
     def filter(self, record):
-        if not hasattr(record, 'request_id'):
-            record.request_id = 'no-request-id'
+        if not hasattr(record, "request_id"):
+            record.request_id = "no-request-id"
         return True
+
 
 logger.addFilter(RequestIDFilter())
 
@@ -113,16 +115,20 @@ DEVICE = None
 # Pydantic Models
 # =============================================================================
 
+
 class BatchPredictRequest(BaseModel):
     """Request model for batch prediction."""
+
     image_dir: str
     report_id: Optional[str] = None
     batch_size: int = DEFAULT_BATCH_SIZE
     num_workers: int = NUM_WORKERS
     max_images: Optional[int] = None
 
+
 class BatchPredictResponse(BaseModel):
     """Response model for batch prediction."""
+
     report_dir: str
     total: int
     successful: int
@@ -130,8 +136,10 @@ class BatchPredictResponse(BaseModel):
     files: dict
     failed_images: list
 
+
 class HealthResponse(BaseModel):
     """Response model for health check."""
+
     status: str
     device: str
     model_loaded: bool
@@ -139,9 +147,11 @@ class HealthResponse(BaseModel):
     model_version: str
     uptime_seconds: float
 
+
 # =============================================================================
 # Helper Functions
 # =============================================================================
+
 
 def _dummy_predict() -> dict:
     """Dummy predictor for testing mode."""
@@ -158,6 +168,7 @@ def _dummy_predict() -> dict:
         },
     }
 
+
 def _dummy_batch_predict(image_files: list) -> tuple[list[dict], list]:
     """Dummy batch predictor for testing mode."""
     predictions = []
@@ -168,36 +179,37 @@ def _dummy_batch_predict(image_files: list) -> tuple[list[dict], list]:
     failures = []
     return predictions, failures
 
+
 def load_model_once():
     """Load model once at startup with logging."""
     global MODEL, DEVICE, CHECKPOINT_PATH
-    
+
     # Testing mode
     if TESTING_MODE:
         logger.info("TESTING MODE ENABLED: Using dummy model", extra={"request_id": "startup"})
         DEVICE = torch.device("cpu")
         MODEL = "DUMMY_MODEL_FOR_TESTING"
         return
-    
+
     # Device detection
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Device detected: {DEVICE}", extra={"request_id": "startup"})
-    
+
     # Load model
     try:
         logger.info(f"Loading model from: {CHECKPOINT_PATH}", extra={"request_id": "startup"})
         start_time = time.time()
-        
+
         MODEL = load_model(CHECKPOINT_PATH, DEVICE)
-        
+
         load_time = time.time() - start_time
         logger.info(
-            f"Model loaded successfully in {load_time:.2f}s",
-            extra={"request_id": "startup"}
+            f"Model loaded successfully in {load_time:.2f}s", extra={"request_id": "startup"}
         )
     except Exception as e:
         logger.error(f"Failed to load model: {e}", extra={"request_id": "startup"}, exc_info=True)
         raise
+
 
 # =============================================================================
 # FastAPI App
@@ -218,56 +230,52 @@ app = FastAPI(
 # Middleware
 # =============================================================================
 
+
 @app.middleware("http")
 async def add_request_id_middleware(request: Request, call_next):
     """Add unique request ID to all requests for tracing."""
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
-    
+
     # Log incoming request
     logger.info(
-        f"Incoming request: {request.method} {request.url.path}",
-        extra={"request_id": request_id}
+        f"Incoming request: {request.method} {request.url.path}", extra={"request_id": request_id}
     )
-    
+
     start_time = time.time()
     response = await call_next(request)
     duration = time.time() - start_time
-    
+
     # Log response
     logger.info(
-        f"Response: {response.status_code} in {duration:.3f}s",
-        extra={"request_id": request_id}
+        f"Response: {response.status_code} in {duration:.3f}s", extra={"request_id": request_id}
     )
-    
+
     # Add request ID to response headers
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Response-Time"] = f"{duration:.3f}s"
-    
+
     return response
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler with logging."""
-    request_id = getattr(request.state, 'request_id', 'unknown')
-    
+    request_id = getattr(request.state, "request_id", "unknown")
+
     logger.error(
-        f"Unhandled exception: {str(exc)}",
-        extra={"request_id": request_id},
-        exc_info=True
+        f"Unhandled exception: {str(exc)}", extra={"request_id": request_id}, exc_info=True
     )
-    
+
     return JSONResponse(
-        status_code=500,
-        content={
-            "detail": "Internal server error",
-            "request_id": request_id
-        }
+        status_code=500, content={"detail": "Internal server error", "request_id": request_id}
     )
+
 
 # =============================================================================
 # Startup & Shutdown Events
 # =============================================================================
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -276,25 +284,28 @@ async def startup_event():
     logger.info(f"Python version: {sys.version}", extra={"request_id": "startup"})
     logger.info(f"PyTorch version: {torch.__version__}", extra={"request_id": "startup"})
     logger.info(f"Log level: {LOG_LEVEL}", extra={"request_id": "startup"})
-    
+
     load_model_once()
-    
+
     logger.info("=== Wound-AI API Ready ===", extra={"request_id": "startup"})
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown."""
     logger.info("=== Wound-AI API Shutting Down ===", extra={"request_id": "shutdown"})
 
+
 # =============================================================================
 # API Endpoints
 # =============================================================================
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check(request: Request):
     """Health check endpoint with detailed status."""
     uptime = (datetime.now() - STARTUP_TIME).total_seconds()
-    
+
     return {
         "status": "ok",
         "device": str(DEVICE),
@@ -304,6 +315,7 @@ async def health_check(request: Request):
         "uptime_seconds": uptime,
     }
 
+
 @app.post("/predict")
 async def predict_image(
     request: Request,
@@ -312,137 +324,135 @@ async def predict_image(
 ):
     """Predict on a single uploaded image with logging."""
     request_id = request.state.request_id
-    
+
     # Validate model is loaded
     if MODEL is None:
         logger.error("Model not loaded", extra={"request_id": request_id})
         raise HTTPException(status_code=503, detail="Model not loaded")
-    
+
     # Validate file extension
     file_ext = Path(file.filename).suffix.lower()
     allowed_exts = [".jpg", ".jpeg", ".png", ".webp"]
-    
+
     if file_ext not in allowed_exts:
         logger.warning(
             f"Invalid file type: {file_ext} for file: {file.filename}",
-            extra={"request_id": request_id}
+            extra={"request_id": request_id},
         )
         raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file type: {file_ext}. Allowed: {allowed_exts}"
+            status_code=400, detail=f"Invalid file type: {file_ext}. Allowed: {allowed_exts}"
         )
-    
+
     logger.info(f"Processing image: {file.filename}", extra={"request_id": request_id})
-    
+
     try:
         start_time = time.time()
-        
+
         # Read image
         image_bytes = await file.read()
         image = Image.open(BytesIO(image_bytes)).convert("RGB")
-        
+
         # Save to temp file
         temp_dir = ROOT / "artifacts" / "api_temp"
         temp_dir.mkdir(parents=True, exist_ok=True)
         temp_path = temp_dir / file.filename
         image.save(temp_path)
-        
+
         # Preprocess
         image_tensor = preprocess_image(temp_path)
-        
+
         # Predict
         if TESTING_MODE:
             prediction = _dummy_predict()
         else:
             prediction = predict(MODEL, image_tensor, DEVICE)
-        
+
         inference_time = time.time() - start_time
-        
+
         logger.info(
             f"Prediction successful: {prediction['top1_class']} "
             f"({prediction['top1_prob']:.4f}) in {inference_time:.3f}s",
-            extra={"request_id": request_id}
+            extra={"request_id": request_id},
         )
-        
+
         # Save artifacts if requested
         if save_artifacts:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_dir = ROOT / "artifacts" / "api_predictions" / timestamp
             output_dir.mkdir(parents=True, exist_ok=True)
-            
+
             import json
+
             prediction_with_image = {
                 "image": file.filename,
                 "top1_class": prediction["top1_class"],
                 "top1_prob": round(prediction["top1_prob"], 4),
                 "all_probs": {k: round(v, 4) for k, v in prediction["all_probs"].items()},
             }
-            
+
             output_path = output_dir / "prediction.json"
             with open(output_path, "w") as f:
                 json.dump(prediction_with_image, f, indent=2)
-            
+
             logger.info(f"Artifacts saved to: {output_path}", extra={"request_id": request_id})
             prediction["artifacts_saved"] = str(output_path)
-        
+
         # Cleanup temp file
         temp_path.unlink(missing_ok=True)
-        
+
         return {
             "top1_class": prediction["top1_class"],
             "top1_prob": round(prediction["top1_prob"], 4),
             "all_probs": {k: round(v, 4) for k, v in prediction["all_probs"].items()},
         }
-    
+
     except Exception as e:
         logger.error(
-            f"Prediction failed: {str(e)}",
-            extra={"request_id": request_id},
-            exc_info=True
+            f"Prediction failed: {str(e)}", extra={"request_id": request_id}, exc_info=True
         )
-        
+
         # Cleanup temp file on error
         if "temp_path" in locals():
             temp_path.unlink(missing_ok=True)
-        
+
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
 
 @app.post("/batch_predict", response_model=BatchPredictResponse)
 async def batch_predict(request: Request, req: BatchPredictRequest):
     """Run batch prediction with logging."""
     request_id = request.state.request_id
-    
+
     # Validate model is loaded
     if MODEL is None:
         logger.error("Model not loaded", extra={"request_id": request_id})
         raise HTTPException(status_code=503, detail="Model not loaded")
-    
+
     # Validate directory
     image_dir = Path(req.image_dir)
     if not image_dir.exists():
         logger.error(f"Directory not found: {image_dir}", extra={"request_id": request_id})
         raise HTTPException(
-            status_code=404,
-            detail=f"Image directory not found: {image_dir.absolute()}"
+            status_code=404, detail=f"Image directory not found: {image_dir.absolute()}"
         )
-    
+
     if not image_dir.is_dir():
         logger.error(f"Not a directory: {image_dir}", extra={"request_id": request_id})
         raise HTTPException(status_code=400, detail=f"Not a directory: {image_dir}")
-    
+
     logger.info(f"Starting batch prediction on: {image_dir}", extra={"request_id": request_id})
-    
+
     try:
         start_time = time.time()
-        
+
         # Setup report directory
         if req.report_id:
             report_id = req.report_id
         else:
             report_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
+
         report_dir = ROOT / "artifacts" / "inference_reports" / report_id
-        
+
         # Scan for images
         try:
             image_files = scan_image_directory(image_dir, max_images=req.max_images)
@@ -450,7 +460,7 @@ async def batch_predict(request: Request, req: BatchPredictRequest):
         except ValueError as e:
             logger.error(f"Scan failed: {str(e)}", extra={"request_id": request_id})
             raise HTTPException(status_code=400, detail=str(e))
-        
+
         # Run batch inference
         if TESTING_MODE:
             predictions, failures = _dummy_batch_predict(image_files)
@@ -462,24 +472,23 @@ async def batch_predict(request: Request, req: BatchPredictRequest):
                 batch_size=req.batch_size,
                 num_workers=req.num_workers,
             )
-        
+
         # Save report
         report_files = save_batch_report(predictions, report_dir)
-        
+
         batch_time = time.time() - start_time
-        
+
         logger.info(
             f"Batch prediction complete: {len(predictions)} successful, "
             f"{len(failures)} failed in {batch_time:.2f}s",
-            extra={"request_id": request_id}
+            extra={"request_id": request_id},
         )
-        
+
         # Format failed images
         failed_images_list = [
-            {"image": str(img_path), "error": str(error)}
-            for img_path, error in failures
+            {"image": str(img_path), "error": str(error)} for img_path, error in failures
         ]
-        
+
         return BatchPredictResponse(
             report_dir=str(report_dir),
             total=len(image_files),
@@ -492,16 +501,15 @@ async def batch_predict(request: Request, req: BatchPredictRequest):
             },
             failed_images=failed_images_list,
         )
-    
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(
-            f"Batch prediction failed: {str(e)}",
-            extra={"request_id": request_id},
-            exc_info=True
+            f"Batch prediction failed: {str(e)}", extra={"request_id": request_id}, exc_info=True
         )
         raise HTTPException(status_code=500, detail=f"Batch prediction failed: {str(e)}")
+
 
 # =============================================================================
 # Main Entry Point
@@ -509,13 +517,8 @@ async def batch_predict(request: Request, req: BatchPredictRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     logger.info("Starting Wound-AI API server...", extra={"request_id": "main"})
     logger.info(f"API docs at: http://{API_HOST}:{API_PORT}/docs", extra={"request_id": "main"})
-    
-    uvicorn.run(
-        app,
-        host=API_HOST,
-        port=API_PORT,
-        log_level=LOG_LEVEL.lower()
-    )
+
+    uvicorn.run(app, host=API_HOST, port=API_PORT, log_level=LOG_LEVEL.lower())
